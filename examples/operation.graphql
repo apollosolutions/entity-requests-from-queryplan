@@ -1,0 +1,15 @@
+query ByProduct($productId: ID!) {
+  product(id: $productId) {
+    id
+    title
+    description
+    reviews {
+      id
+      body
+      user {
+        id
+        username
+      }
+    }
+  }
+}
