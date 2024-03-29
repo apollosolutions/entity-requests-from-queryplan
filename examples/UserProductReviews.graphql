@@ -1,4 +1,4 @@
-query ByProduct($productId: ID!) {
+query UserProductReviews($productId: ID!) {
   product(id: $productId) {
     id
     title

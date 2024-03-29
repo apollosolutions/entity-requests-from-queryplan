@@ -1,0 +1,23 @@
+fragment UserFragment on Review {
+  user {
+    id
+    username
+  }
+}
+
+fragment ReviewsFragment on Product {
+  reviews {
+    id
+    body
+    ...UserFragment @defer
+  }
+}
+
+query WithFragments($productId: ID!) {
+  product(id: $productId) {
+    id
+    title
+    description
+    ...ReviewsFragment @defer
+  }
+}

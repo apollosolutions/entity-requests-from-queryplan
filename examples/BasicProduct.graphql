@@ -1,0 +1,19 @@
+query ProductsSimple($productId: ID!) {
+  product(id: $productId) {
+    id
+    title
+    description
+  }
+}
+
+query ProductsWithReviews($productId: ID!) {
+  product(id: $productId) {
+    id
+    title
+    description
+    reviews {
+      id
+      body
+    }
+  }
+}

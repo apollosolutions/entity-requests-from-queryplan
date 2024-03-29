@@ -5,8 +5,8 @@ import { Supergraph } from "@apollo/federation-internals";
 
 import { readFileSync } from "fs";
 
-export const validateSupergraphInput = async (supergraphInput, graphref) => {
-  const client = new GraphQLClient(
+const getClient = () => {
+  return new GraphQLClient(
     "https://graphql.api.apollographql.com/api/graphql",
     {
       fetch,
@@ -18,7 +18,15 @@ export const validateSupergraphInput = async (supergraphInput, graphref) => {
       },
     }
   );
+}
 
+const validateGraphrefPattern = (graphref) => {
+  const regex = /^\s*([^@\s]+)@([^@\s]+)\s*$/;
+  const match = graphref.match(regex);
+  return match !== null;
+};
+
+export const getValidSupergraph = async (supergraphInput, graphref) => {
   let supergraph;
 
   if (supergraphInput) {
@@ -29,8 +37,9 @@ export const validateSupergraphInput = async (supergraphInput, graphref) => {
       throw new Error(`Error reading supergraph file: ${err.message}`);
     }
   } else {
-    const supergraphResp = await client.request(LATEST_SUPERGRAPH_SCHEMA, {
-      ref: graphref,
+    const validatedGraphref = validateGraphrefPattern(graphref);
+    const supergraphResp = await getClient().request(LATEST_SUPERGRAPH_SCHEMA, {
+      ref: validatedGraphref,
     });
 
     const supergraphSdl =

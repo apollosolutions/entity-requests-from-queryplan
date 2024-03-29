@@ -185,7 +185,7 @@ type Product
   """
   recommendedProducts: [Product] @join__field(graph: DISCOVERY)
   upc: ID! @join__field(graph: PRODUCTS) @join__field(graph: REVIEWS)
-  title: String @join__field(graph: PRODUCTS, overrideLabel: "percent(50)") @join__field(graph: REVIEWS, override: "products", overrideLabel: "percent(50)")
+  title: String @join__field(graph: PRODUCTS)
   description: String @join__field(graph: PRODUCTS)
   mediaUrl: String @join__field(graph: PRODUCTS)
 
@@ -202,7 +202,6 @@ input ProductSearchInput
   @join__type(graph: PRODUCTS)
 {
   titleStartsWith: String
-  description_contains: String
 }
 
 type Query
@@ -256,22 +255,21 @@ type ResultWithMessage
 
 """A review of a given product by a specific user"""
 type Review
-  @join__type(graph: PRODUCTS, key: "id")
   @join__type(graph: REVIEWS, key: "id")
 {
   id: ID!
 
   """The plain text version of the review"""
-  body: String @join__field(graph: PRODUCTS, override: "reviews", overrideLabel: "percent(50)") @join__field(graph: REVIEWS, overrideLabel: "percent(50)")
+  body: String
 
   """The person who authored the review"""
-  author: String @join__field(graph: REVIEWS) @deprecated(reason: "Use the new `user` field")
+  author: String @deprecated(reason: "Use the new `user` field")
 
   """The User who submitted the review"""
-  user: User @join__field(graph: REVIEWS)
+  user: User
 
   """The product which this review is about"""
-  product: Product @join__field(graph: REVIEWS)
+  product: Product
 }
 
 """An user account in our system"""
@@ -279,7 +277,7 @@ type User
   @join__type(graph: CHECKOUT, key: "id")
   @join__type(graph: DISCOVERY, key: "id")
   @join__type(graph: ORDERS, key: "id", resolvable: false)
-  @join__type(graph: REVIEWS, key: "id", resolvable: false)
+  @join__type(graph: REVIEWS, key: "id")
   @join__type(graph: SHIPPING, key: "id", resolvable: false)
   @join__type(graph: USERS, key: "id")
 {
@@ -295,6 +293,10 @@ type User
   """
   recommendedProducts(productId: ID = null): [Product] @join__field(graph: DISCOVERY)
 
+  """Total saved loyalty points and rewards"""
+  loyaltyPoints: Int @join__field(graph: REVIEWS, external: true) @join__field(graph: USERS)
+  reviewKarma: Int @join__field(graph: REVIEWS, requires: "loyaltyPoints")
+
   """The users current saved shipping address"""
   shippingAddress: String @join__field(graph: SHIPPING, external: true) @join__field(graph: USERS)
 
@@ -303,9 +305,6 @@ type User
 
   """Get the list of last session id of user activity"""
   previousSessions: [ID!] @join__field(graph: USERS)
-
-  """Total saved loyalty points and rewards"""
-  loyaltyPoints: Int @join__field(graph: USERS)
 
   """Saved payment methods that can be used to submit orders"""
   paymentMethods: [PaymentMethod] @join__field(graph: USERS)
