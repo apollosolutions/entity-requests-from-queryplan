@@ -1,7 +1,6 @@
-query UsingRequires {
-  user {
+query UsesRequires($orderId: ID!) {
+  order(id: $orderId) {
     id
-    reviewKarma
-    username
+    shippingCost
   }
 }

@@ -2,17 +2,23 @@ import { GraphQLClient } from "graphql-request";
 import { fetch } from "undici";
 import { LATEST_SUPERGRAPH_SCHEMA } from "./LatestSupergraphSchema.js";
 import { Supergraph } from "@apollo/federation-internals";
-
 import { readFileSync } from "fs";
 
 const getClient = () => {
+  const apolloKey = process.env.APOLLO_KEY ?? "";
+  const apolloSudo = process.env.APOLLO_SUDO ?? false;
+
+  if (!apolloKey) {
+    throw new Error("APOLLO_KEY environment variable not set");
+  }
+
   return new GraphQLClient(
     "https://graphql.api.apollographql.com/api/graphql",
     {
       fetch,
       headers: {
-        "x-api-key": process.env.APOLLO_KEY ?? "",
-        ...(process.env.APOLLO_SUDO ? { "apollo-sudo": "true " } : {}),
+        "x-api-key": apolloKey, 
+        ...(apolloSudo ? { "apollo-sudo": "true " } : {}),
         "apollo-client-name": "subgraph-requests-from-op",
         "apollo-client-version": "1.0.0",
       },
@@ -23,7 +29,12 @@ const getClient = () => {
 const validateGraphrefPattern = (graphref) => {
   const regex = /^\s*([^@\s]+)@([^@\s]+)\s*$/;
   const match = graphref.match(regex);
-  return match !== null;
+
+  if (!match) {
+    throw new Error("Invalid graphref pattern");
+  }
+
+  return
 };
 
 export const getValidSupergraph = async (supergraphInput, graphref) => {
@@ -37,9 +48,10 @@ export const getValidSupergraph = async (supergraphInput, graphref) => {
       throw new Error(`Error reading supergraph file: ${err.message}`);
     }
   } else {
-    const validatedGraphref = validateGraphrefPattern(graphref);
+    console.log("Graphref: ", graphref);
+    validateGraphrefPattern(graphref);
     const supergraphResp = await getClient().request(LATEST_SUPERGRAPH_SCHEMA, {
-      ref: validatedGraphref,
+      ref: graphref,
     });
 
     const supergraphSdl =
