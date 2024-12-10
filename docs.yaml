@@ -1,0 +1,7 @@
+name: entity-requests-from-queryplan
+description: A CLI that generates a list of `_entities` requests that are part
+  of the query plan for a given operation, along with their required input
+  variables.
+tags:
+  - Query Planning
+  - Subgraph
